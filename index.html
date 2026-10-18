@@ -38558,7 +38558,6 @@ const Sheet=(function(){const s=document.getElementById('sheet'),scrim=document.
 let qi=0;
 function drawSpectrum(){const [key,title,L,R]=QUESTIONS[qi];
  document.getElementById('qs').innerHTML=QUESTIONS.map((q,i)=>`<button class="q ${i===qi?'on':''}" onclick="qi=${i};drawSpectrum()">${q[1]}</button>`).join('');
- document.getElementById('ax').innerHTML=`<span>← ${L}</span><span>In between</span><span>${R} →</span>`;
  const spec=document.getElementById('spec');spec.querySelectorAll('.pp,.colz').forEach(e=>e.remove());
  const groups={for:[],mid:[],against:[],none:[]};
  DATA.forEach(p=>{const x=getPos(p,key);if(!x)groups.none.push([p,x]);else if(x.stance==='for')groups.for.push([p,x]);else if(x.stance==='against')groups.against.push([p,x]);else groups.mid.push([p,x])});
@@ -38568,7 +38567,10 @@ function drawSpectrum(){const [key,title,L,R]=QUESTIONS[qi];
  const wts=[groups.for,groups.mid,groups.against].map(g=>Math.max(g.length,1.5)),ws=wts.reduce((a,b)=>a+b,0),W=[0,1,2].map(i=>90*wts[i]/ws);const c0=5+W[0]/2,c1=5+W[0]+W[1]/2,c2=5+W[0]+W[1]+W[2]/2;
  spec.style.setProperty('--d1',(5+W[0])+'%');spec.style.setProperty('--d2',(5+W[0]+W[1])+'%');
  const narrow=innerWidth<640&&DATA.length>8;spec.classList.toggle('narrow',narrow);
- const mk=(p,x)=>{const d=document.createElement('div');d.className='pp';d.innerHTML=av(p)+`<span>${esc(lastOf(p))}</span>`;d.onclick=()=>showQuote(p,x,d,'quote');return d};
+ const lc={};DATA.forEach(p=>{const k=lastOf(p);lc[k]=(lc[k]||0)+1});const shortName=p=>{const k=lastOf(p);return lc[k]>1?clean(p.name).split(' ')[0][0]+'. '+k:k};
+ const axc=narrow?[100/6,50,500/6]:[c0,c1,c2],axl=[`← ${L} · ${groups.for.length}`,`In between · ${groups.mid.length}`,`${R} · ${groups.against.length} →`];
+ const axe=document.getElementById('ax');axe.style.left='0';axe.style.right='0';axe.innerHTML=axl.map((t,i)=>`<span style="position:absolute;left:${axc[i]}%;transform:translateX(-50%);white-space:nowrap">${esc(t)}</span>`).join('');
+ const mk=(p,x)=>{const d=document.createElement('div');d.className='pp';d.innerHTML=av(p)+`<span>${esc(shortName(p))}</span>`;d.onclick=()=>showQuote(p,x,d,'quote');return d};
  if(narrow){spec.style.height='auto';const cz=document.createElement('div');cz.className='colz';[groups.for,groups.mid,groups.against].forEach(g=>{const c=document.createElement('div');g.forEach(([p,x])=>c.appendChild(mk(p,x)));cz.appendChild(c)});spec.appendChild(cz)}
  else [...place(groups.for,c0,W[0]-2),...place(groups.mid,c1,W[1]-2),...place(groups.against,c2,W[2]-2)].forEach(([p,x,left,top])=>{const d=mk(p,x);d.style.left=left+'%';d.style.top=top+'px';spec.appendChild(d)});
  const f=groups.for.length,a=groups.against.length,m=groups.mid.length;
